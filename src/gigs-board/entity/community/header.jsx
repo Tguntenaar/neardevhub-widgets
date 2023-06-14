@@ -130,7 +130,7 @@ const Button = styled.button`
 const BannerImage = styled.img`
   width: 100%;
   max-height: 240px;
-  height:auto;
+  height: auto;
   object-fit: cover;
 `;
 
@@ -154,10 +154,7 @@ const CommunityHeader = ({ handle, label, tab }) => {
 
   return (
     <Header className="d-flex flex-column gap-3 px-4 pt-3">
-      <BannerImage
-        src={props.banner_url}
-        alt="Community Banner"
-      ></BannerImage>
+      <BannerImage src={props.banner_url} alt="Community Banner"></BannerImage>
       <div className="d-md-flex d-block justify-content-between container">
         <div className="d-md-flex d-block align-items-end">
           <div className="position-relative">
