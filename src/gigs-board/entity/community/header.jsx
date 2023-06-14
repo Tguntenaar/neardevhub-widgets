@@ -128,9 +128,10 @@ const Button = styled.button`
 `;
 
 const BannerImage = styled.img`
-  max-width: 100%;
-  width: 1320px;
-  height: 240px;
+  width: 100%;
+  max-height: 240px;
+  height:auto;
+  object-fit: cover;
 `;
 
 const LogoImage = styled.img`
@@ -147,7 +148,6 @@ const CommunityHeader = ({ handle, label, tab }) => {
     <Header className="d-flex flex-column gap-3 px-4 pt-3">
       <BannerImage
         src={props.banner_url}
-        className="object-fit-cover"
         alt="Community Banner"
       ></BannerImage>
       <div className="d-md-flex d-block justify-content-between container">
