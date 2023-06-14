@@ -55,7 +55,7 @@ function href(widgetName, linkProps) {
 State.init({
   copiedShareUrl: false,
 });
-const canEdit = true;
+
 const shareUrl = window.location.href;
 
 const Header = styled.div`
@@ -144,6 +144,14 @@ const SizedDiv = styled.div`
 `;
 
 const CommunityHeader = ({ handle, label, tab }) => {
+  // TODO test
+  const community =
+    Near.view(nearDevGovGigsWidgetsAccountId, "get_community", {
+      slug: handle,
+    }) ?? null;
+
+  const isAdmin = (community?.admins ?? []).includes(context.accountId);
+
   return (
     <Header className="d-flex flex-column gap-3 px-4 pt-3">
       <BannerImage
@@ -169,7 +177,7 @@ const CommunityHeader = ({ handle, label, tab }) => {
           </div>
         </div>
         <div className="d-flex align-items-end">
-          {canEdit && (
+          {isAdmin && (
             <Link
               href={href("community.new", { label })}
               className="border border-1 text-nowrap rounded-pill p-2 m-2 bg-white text-dark font-weight-bold"
