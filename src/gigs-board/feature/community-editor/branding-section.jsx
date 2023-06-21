@@ -51,14 +51,8 @@ function href(widgetName, linkProps) {
   }${linkPropsQuery}`;
 }
 /* END_INCLUDE: "common.jsx" */
-/* INCLUDE: "shared/lib/gui" */
-const Card = styled.div`
-  &:hover {
-    box-shadow: rgba(3, 102, 214, 0.3) 0px 0px 0px 3px;
-  }
-`;
-
-const Magnifiable = styled.div`
+/* INCLUDE: "core/lib/gui/attractable" */
+const AttractableDiv = styled.div`
   box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075) !important;
   transition: box-shadow 0.6s;
 
@@ -66,7 +60,25 @@ const Magnifiable = styled.div`
     box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15) !important;
   }
 `;
-/* END_INCLUDE: "shared/lib/gui" */
+
+const AttractableLink = styled.a`
+  box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075) !important;
+  transition: box-shadow 0.6s;
+
+  &:hover {
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15) !important;
+  }
+`;
+
+const AttractableImage = styled.img`
+  box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075) !important;
+  transition: box-shadow 0.6s;
+
+  &:hover {
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15) !important;
+  }
+`;
+/* END_INCLUDE: "core/lib/gui/attractable" */
 
 const Banner = styled.div`
   border-top-left-radius: var(--bs-border-radius-xl) !important;
@@ -103,8 +115,6 @@ const Banner = styled.div`
 `;
 
 const Logo = styled.div`
-  height: calc(100% - 100px);
-
   & > div :not(.btn) {
     position: absolute;
     display: none;
@@ -135,8 +145,8 @@ const Logo = styled.div`
 `;
 
 const communityBrandingDefaults = {
-  banner_cid: "bafkreiaowjqxds24fwcliyriintjd4ucciprii2rdxjmxgi7f5dmzuscey",
-  logo_cid: "bafkreiaowjqxds24fwcliyriintjd4ucciprii2rdxjmxgi7f5dmzuscey",
+  banner_cid: "bafkreic4xgorjt6ha5z4s5e3hscjqrowe5ahd7hlfc5p4hb6kdfp6prgy4",
+  logo_cid: "bafkreibysr2mkwhb4j36h2t7mqwhynqdy4vzjfygfkfg65kuspd2bawauu",
 };
 
 const CommunityEditorBrandingSection = ({
@@ -171,7 +181,7 @@ const CommunityEditorBrandingSection = ({
   });
 
   return (
-    <Magnifiable
+    <AttractableDiv
       className="card rounded-4 w-100"
       style={{ maxWidth: 896, height: 280 }}
     >
@@ -182,7 +192,9 @@ const CommunityEditorBrandingSection = ({
           background: `center / cover no-repeat url(${data.banner_url})`,
         }}
       >
-        <IpfsImageUpload image={state.data.banner} />
+        {isEditingAllowed ? (
+          <IpfsImageUpload image={state.data.banner} />
+        ) : null}
       </Banner>
 
       <Logo
@@ -198,17 +210,27 @@ const CommunityEditorBrandingSection = ({
           background: `center / cover no-repeat url(${data.logo_url})`,
         }}
       >
-        <IpfsImageUpload image={state.data.logo} />
+        {isEditingAllowed ? <IpfsImageUpload image={state.data.logo} /> : null}
       </Logo>
 
       <div
         className="card-body p-4"
         style={{ marginTop: -64, marginLeft: 180, height: 84 }}
       >
-        <h5 className="h5">{name}</h5>
-        <p className="card-text">{description}</p>
+        <h5
+          className="h5 text-nowrap overflow-hidden"
+          style={{ textOverflow: "ellipsis" }}
+        >
+          {name}
+        </h5>
+        <p
+          className="card-text text-nowrap overflow-hidden"
+          style={{ textOverflow: "ellipsis" }}
+        >
+          {description}
+        </p>
       </div>
-    </Magnifiable>
+    </AttractableDiv>
   );
 };
 

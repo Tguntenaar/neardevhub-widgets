@@ -51,12 +51,37 @@ function href(widgetName, linkProps) {
   }${linkPropsQuery}`;
 }
 /* END_INCLUDE: "common.jsx" */
+/* INCLUDE: "core/adapter/dev-hub" */
+const contractAccountId =
+  props.nearDevGovGigsContractAccountId ||
+  (context.widgetSrc ?? "devgovgigs.near").split("/", 1)[0];
 
-State.init({
-  copiedShareUrl: false,
-});
+const DevHub = {
+  edit_community_github: ({ handle, github }) =>
+    Near.call(contractAccountId, "edit_community_github", { handle, github }) ??
+    null,
 
-const shareUrl = window.location.href;
+  get_access_control_info: () =>
+    Near.view(contractAccountId, "get_access_control_info") ?? null,
+
+  get_all_communities: () =>
+    Near.view(contractAccountId, "get_all_communities") ?? null,
+
+  get_community: ({ handle }) =>
+    Near.view(contractAccountId, "get_community", { handle }) ?? null,
+
+  get_post: ({ post_id }) =>
+    Near.view(contractAccountId, "get_post", { post_id }) ?? null,
+
+  get_posts_by_label: ({ label }) =>
+    Near.view(nearDevGovGigsContractAccountId, "get_posts_by_label", {
+      label,
+    }) ?? null,
+
+  get_root_members: () =>
+    Near.view(contractAccountId, "get_root_members") ?? null,
+};
+/* END_INCLUDE: "core/adapter/dev-hub" */
 
 const Header = styled.div`
   overflow: hidden;
@@ -79,59 +104,17 @@ const NavUnderline = styled.ul`
   }
 `;
 
-const topicTabs = [
-  {
-    defaultActive: true,
-    iconClass: "bi bi-house-door",
-    path: "community.Overview",
-    title: "Overview",
-  },
-  {
-    iconClass: "bi bi-chat-square-text",
-    path: "community.Discussions",
-    title: "Discussions",
-  },
-  {
-    iconClass: "bi bi-coin",
-    path: "community.Sponsorship",
-    title: "Sponsorship",
-  },
-  {
-    iconClass: "bi bi-calendar",
-    path: "community.Events",
-    title: "Events",
-  },
-  {
-    iconClass: "bi bi-github",
-    path: "community.github",
-    title: "GitHub",
-  },
-  {
-    iconClass: "bi bi-telegram",
-    path: "community.Telegram",
-    title: "Telegram",
-  },
-];
-
-const buttonString = `
-height: 40px;
-font-size: 14px;
-border-color: #e3e3e0;
-`;
-
-const Link = styled.a`
-  ${buttonString}
-`;
-
 const Button = styled.button`
-  ${buttonString}
+  height: 40px;
+  font-size: 14px;
+  border-color: #e3e3e0;
+  background-color: #ffffff;
 `;
 
-const BannerImage = styled.img`
-  width: 100%;
-  max-height: 240px;
-  height: auto;
-  object-fit: cover;
+const Banner = styled.div`
+  max-width: 100%;
+  width: 1320px;
+  height: 240px;
 `;
 
 const LogoImage = styled.img`
@@ -143,59 +126,134 @@ const SizedDiv = styled.div`
   height: 100px;
 `;
 
-const CommunityHeader = ({ handle, label, tab }) => {
-  // TODO test
-  const community =
-    Near.view(nearDevGovGigsWidgetsAccountId, "get_community", {
-      slug: handle,
-    }) ?? null;
+const CommunityHeader = ({ activeTabTitle, handle }) => {
+  State.init({
+    copiedShareUrl: false,
+  });
 
-  const isAdmin = (community?.admins ?? []).includes(context.accountId);
+  const accessControlInfo = DevHub.get_access_control_info();
+
+  const communityData = DevHub.get_community({ handle });
+
+  if (accessControlInfo === null || communityData === null) {
+    return <div>Loading...</div>;
+  }
+
+  const isSupervisionAllowed =
+    accessControlInfo.members_list["team:moderators"]?.children?.includes(
+      context.accountId
+    ) ?? false;
+
+  const tabs = [
+    {
+      defaultActive: true,
+      iconClass: "bi bi-house-door",
+      route: "community.activity",
+      title: "Activity",
+    },
+
+    ...[communityData.wiki1, communityData.wiki2]
+      .filter((maybeWikiPage) => maybeWikiPage ?? false)
+      .map(({ name }, idx) => ({
+        params: { id: idx + 1 },
+        route: "community.wiki",
+        title: name,
+      })),
+
+    {
+      iconClass: "bi bi-coin",
+      route: "community.sponsorship",
+      title: "Sponsorship",
+    },
+
+    {
+      iconClass: "bi bi-github",
+      route: "community.github",
+      title: "GitHub",
+    },
+
+    ...(communityData.telegram_handle !== null
+      ? [
+          {
+            iconClass: "bi bi-telegram",
+            route: "community.telegram",
+            title: "Telegram",
+          },
+        ]
+      : []),
+  ];
+
+  const isEditingAllowed =
+    isSupervisionAllowed ||
+    communityData?.admins?.includes?.(context.accountId);
 
   return (
-    <Header className="d-flex flex-column gap-3 px-4 pt-3">
-      <BannerImage src={props.banner_url} alt="Community Banner"></BannerImage>
+    <Header className="d-flex flex-column gap-3">
+      <Banner
+        className="object-fit-cover"
+        style={{
+          background: `center / cover no-repeat url(${communityData.banner_url})`,
+        }}
+      />
+
       <div className="d-md-flex d-block justify-content-between container">
         <div className="d-md-flex d-block align-items-end">
           <div className="position-relative">
             <SizedDiv>
               <LogoImage
-                src={props.logo_url}
-                alt="Community Icon"
+                src={communityData.logo_url}
+                alt="Community logo"
                 width="150"
                 height="150"
                 className="border border-3 border-white rounded-circle shadow position-absolute"
-              ></LogoImage>
+              />
             </SizedDiv>
           </div>
+
           <div>
-            <div className="h1 pt-3 ps-3 text-nowrap">{props.name}</div>
-            <div className="ps-3 pb-2 text-secondary">{props.description}</div>
+            <div className="h1 pt-3 ps-3 text-nowrap">{communityData.name}</div>
+
+            <div className="ps-3 pb-2 text-secondary">
+              {communityData.description}
+            </div>
           </div>
         </div>
-        <div className="d-flex align-items-end">
-          {isAdmin && (
-            <Link
-              href={href("community.new", { label })}
-              className="border border-1 text-nowrap rounded-pill p-2 m-2 bg-white text-dark font-weight-bold"
+
+        <div className="d-flex align-items-end gap-3">
+          {isEditingAllowed && (
+            <a
+              href={href("community.edit-info", { handle })}
+              className={[
+                "d-flex align-items-center gap-2 border border-1 rounded-pill px-3 py-2",
+                "text-decoration-none text-dark text-nowrap font-weight-bold fs-6",
+              ].join(" ")}
             >
-              <i className="bi bi-gear" /> Edit Community
-            </Link>
+              <i className="bi bi-gear" />
+              <span>Edit information</span>
+            </a>
           )}
+
           <OverlayTrigger
             placement="top"
             overlay={<Tooltip>Copy URL to clipboard</Tooltip>}
           >
             <Button
               type="button"
-              className="ms-3 border border-1 text-nowrap rounded-pill p-2 m-2 bg-white text-dark font-weight-bold"
+              className={[
+                "d-flex align-items-center gap-2 border border-1 rounded-pill px-3 py-2",
+                "text-dark text-nowrap font-weight-bold fs-6",
+              ].join(" ")}
               onMouseLeave={() => {
                 State.update({ copiedShareUrl: false });
               }}
               onClick={() => {
-                clipboard.writeText(shareUrl).then(() => {
-                  State.update({ copiedShareUrl: true });
-                });
+                clipboard
+                  .writeText(
+                    "https://near.org" + href("community.activity", { handle })
+                  )
+                  .then(() => {
+                    State.update({ copiedShareUrl: true });
+                  });
               }}
             >
               {state.copiedShareUrl ? (
@@ -203,23 +261,24 @@ const CommunityHeader = ({ handle, label, tab }) => {
               ) : (
                 <i className="bi bi-16 bi-link-45deg"></i>
               )}
-              Share
+
+              <span>Share</span>
             </Button>
           </OverlayTrigger>
         </div>
       </div>
 
       <NavUnderline className="nav">
-        {topicTabs.map(({ defaultActive, path, title }) =>
+        {tabs.map(({ defaultActive, params, route, title }) =>
           title ? (
             <li className="nav-item" key={title}>
               <a
                 aria-current={defaultActive && "page"}
                 className={[
                   "d-inline-flex gap-2",
-                  tab === title ? "nav-link active" : "nav-link",
+                  activeTabTitle === title ? "nav-link active" : "nav-link",
                 ].join(" ")}
-                href={href(path, { handle })}
+                href={href(route, { handle, ...(params ?? {}) })}
               >
                 <span>{title}</span>
               </a>

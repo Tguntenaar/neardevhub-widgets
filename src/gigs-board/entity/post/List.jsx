@@ -69,7 +69,7 @@ function defaultRenderItem(postId, additionalProps) {
   return (
     <div style={{ minHeight: "150px" }}>
       {widget(
-        `components.posts.Post`,
+        `entity.post.Post`,
         {
           id: postId,
           expandable: true,
@@ -360,7 +360,6 @@ const fetchMore =
 
 const items = state.items ? state.items.slice(0, state.displayCount) : [];
 
-console.log(items);
 const renderedItems = items.map(cachedRenderItem);
 
 const Head =

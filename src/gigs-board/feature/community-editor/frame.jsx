@@ -51,12 +51,43 @@ function href(widgetName, linkProps) {
   }${linkPropsQuery}`;
 }
 /* END_INCLUDE: "common.jsx" */
-/* INCLUDE: "shared/lib/record" */
+/* INCLUDE: "core/lib/record" */
 const pick = (object, subsetKeys) =>
   Object.fromEntries(
     Object.entries(object ?? {}).filter(([key, _]) => subsetKeys.includes(key))
   );
-/* END_INCLUDE: "shared/lib/record" */
+/* END_INCLUDE: "core/lib/record" */
+/* INCLUDE: "core/adapter/dev-hub" */
+const contractAccountId =
+  props.nearDevGovGigsContractAccountId ||
+  (context.widgetSrc ?? "devgovgigs.near").split("/", 1)[0];
+
+const DevHub = {
+  edit_community_github: ({ handle, github }) =>
+    Near.call(contractAccountId, "edit_community_github", { handle, github }) ??
+    null,
+
+  get_access_control_info: () =>
+    Near.view(contractAccountId, "get_access_control_info") ?? null,
+
+  get_all_communities: () =>
+    Near.view(contractAccountId, "get_all_communities") ?? null,
+
+  get_community: ({ handle }) =>
+    Near.view(contractAccountId, "get_community", { handle }) ?? null,
+
+  get_post: ({ post_id }) =>
+    Near.view(contractAccountId, "get_post", { post_id }) ?? null,
+
+  get_posts_by_label: ({ label }) =>
+    Near.view(nearDevGovGigsContractAccountId, "get_posts_by_label", {
+      label,
+    }) ?? null,
+
+  get_root_members: () =>
+    Near.view(contractAccountId, "get_root_members") ?? null,
+};
+/* END_INCLUDE: "core/adapter/dev-hub" */
 
 const communityDefaults = {
   handle: "",
@@ -67,7 +98,13 @@ const communityDefaults = {
   admins: [context.accountId],
 };
 
-const CommunityEditorFrame = ({ communityHandle }) => {
+const CommunityEditorFrame = ({ handle }) => {
+  const accessControlInfo = DevHub.get_access_control_info();
+
+  if (accessControlInfo === null || communityData === null) {
+    return <div>Loading...</div>;
+  }
+
   State.init({
     activeSection: 0,
     data: null,
@@ -75,23 +112,13 @@ const CommunityEditorFrame = ({ communityHandle }) => {
     isEditingAllowed: false,
 
     isSupervisionAllowed:
-      Near.view(
-        nearDevGovGigsContractAccountId,
-        "get_access_control_info"
-      ).members_list["team:moderators"]?.children?.includes?.(
+      accessControlInfo.members_list["team:moderators"]?.children?.includes?.(
         context.accountId
       ) ?? false,
   });
 
-  console.log(state.data);
-
-  if (typeof communityHandle === "string" && state.data === null) {
-    const data =
-      Near.view(
-        nearDevGovGigsContractAccountId,
-        "get_community",
-        JSON.stringify({ handle: communityHandle })
-      ) ?? null;
+  if (typeof handle === "string" && state.data === null) {
+    const data = DevHub.get_community({ handle });
 
     State.update((lastKnownState) => ({
       ...lastKnownState,
@@ -99,7 +126,7 @@ const CommunityEditorFrame = ({ communityHandle }) => {
       isCommunityNew: false,
       isEditingAllowed: (data?.admins ?? []).includes(context.accountId),
     }));
-  } else if (typeof communityHandle !== "string" && state.data === null) {
+  } else if (typeof handle !== "string" && state.data === null) {
     State.update((lastKnownState) => ({
       ...lastKnownState,
       data: communityDefaults,
@@ -113,10 +140,6 @@ const CommunityEditorFrame = ({ communityHandle }) => {
       ...lastKnownState,
       data: { ...lastKnownState.data, ...partial },
     }));
-
-    if (!state.isCommunityNew) {
-      onSubmit();
-    }
   };
 
   const onSubmit = () =>
@@ -124,8 +147,8 @@ const CommunityEditorFrame = ({ communityHandle }) => {
       nearDevGovGigsContractAccountId,
       state.isCommunityNew ? "add_community" : "edit_community",
 
-      JSON.stringify({
-        handle: state.data.handle,
+      {
+        handle: state.isCommunityNew ? state.data.handle : handle,
 
         community: {
           ...state.data,
@@ -134,15 +157,11 @@ const CommunityEditorFrame = ({ communityHandle }) => {
             (maybeAccountId) => maybeAccountId.length > 0
           ),
         },
-      })
+      }
     );
 
   const onDelete = () =>
-    Near.call(
-      nearDevGovGigsContractAccountId,
-      "delete_community",
-      JSON.stringify({ handle: communityHandle })
-    );
+    Near.call(nearDevGovGigsContractAccountId, "delete_community", { handle });
 
   return (
     <div className="d-flex flex-column align-items-center gap-4 p-4">
@@ -249,25 +268,25 @@ const CommunityEditorFrame = ({ communityHandle }) => {
               },
 
               twitter_handle: {
-                inputProps: { min: 2, max: 30 },
-                label: "Twitter",
+                inputProps: { min: 2, max: 60 },
+                label: "Twitter handle",
                 order: 2,
               },
 
               github_handle: {
-                inputProps: { min: 2, max: 30 },
-                label: "Github",
+                inputProps: { min: 2, max: 60 },
+                label: "Github organization handle",
                 order: 3,
               },
 
               telegram_handle: {
-                inputProps: { min: 2, max: 30 },
-                label: "Telegram",
+                inputProps: { min: 2, max: 60 },
+                label: "Telegram handle",
                 order: 4,
               },
 
               website_url: {
-                inputProps: { min: 2, max: 40 },
+                inputProps: { min: 2, max: 60 },
                 label: "Website",
                 order: 5,
               },
@@ -309,6 +328,7 @@ const CommunityEditorFrame = ({ communityHandle }) => {
               content_markdown: {
                 format: "markdown",
                 label: "Content",
+                multiline: true,
                 order: 2,
               },
             },
@@ -331,12 +351,13 @@ const CommunityEditorFrame = ({ communityHandle }) => {
               content_markdown: {
                 format: "markdown",
                 label: "Content",
+                multiline: true,
                 order: 2,
               },
             },
           })}
 
-          {state.isCommunityNew || state.isSupervisionAllowed ? (
+          {state.isSupervisionAllowed || state.isEditingAllowed ? (
             <div
               className="d-flex justify-content-center p-4 w-100"
               style={{ maxWidth: 896 }}
@@ -347,24 +368,30 @@ const CommunityEditorFrame = ({ communityHandle }) => {
                       root: "btn-lg btn-outline-danger border-none",
                     },
 
-                    disabled: true,
+                    disabled: !state.isSupervisionAllowed,
                     label: "Delete community",
                     onClick: onDelete,
                   })
                 : null}
 
-              {state.isCommunityNew
-                ? widget("components.atom.button", {
-                    classNames: {
-                      root: "btn-lg btn-success",
-                      adornment: "bi bi-rocket-takeoff-fill",
-                    },
+              {widget("components.atom.button", {
+                classNames: {
+                  root: "btn-lg btn-success",
+                  adornment: [
+                    "bi",
+                    state.isCommunityNew
+                      ? "bi-rocket-takeoff-fill"
+                      : "bi-cloud-arrow-up-fill",
+                  ].join(" "),
+                },
 
-                    disabled: !state.isEditingAllowed,
-                    label: "Launch",
-                    onClick: onSubmit,
-                  })
-                : null}
+                disabled: !(state.isCommunityNew
+                  ? true
+                  : state.isSupervisionAllowed || state.isEditingAllowed),
+
+                label: state.isCommunityNew ? "Launch" : "Save",
+                onClick: onSubmit,
+              })}
             </div>
           ) : null}
         </>

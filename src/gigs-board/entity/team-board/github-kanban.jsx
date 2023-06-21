@@ -52,14 +52,8 @@ function href(widgetName, linkProps) {
 }
 /* END_INCLUDE: "common.jsx" */
 
-/* INCLUDE: "shared/lib/gui" */
-const Card = styled.div`
-  &:hover {
-    box-shadow: rgba(3, 102, 214, 0.3) 0px 0px 0px 3px;
-  }
-`;
-
-const Magnifiable = styled.div`
+/* INCLUDE: "core/lib/gui/attractable" */
+const AttractableDiv = styled.div`
   box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075) !important;
   transition: box-shadow 0.6s;
 
@@ -67,7 +61,25 @@ const Magnifiable = styled.div`
     box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15) !important;
   }
 `;
-/* END_INCLUDE: "shared/lib/gui" */
+
+const AttractableLink = styled.a`
+  box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075) !important;
+  transition: box-shadow 0.6s;
+
+  &:hover {
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15) !important;
+  }
+`;
+
+const AttractableImage = styled.img`
+  box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075) !important;
+  transition: box-shadow 0.6s;
+
+  &:hover {
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15) !important;
+  }
+`;
+/* END_INCLUDE: "core/lib/gui/attractable" */
 
 const dataToColumns = (data, columns) =>
   Object.values(columns).reduce(
@@ -94,7 +106,7 @@ const dataToColumns = (data, columns) =>
 
 const withType = (type) => (data) => ({ ...data, type });
 
-const GithubRepoBoard = ({
+const GithubKanbanTeamBoard = ({
   columns,
   dataTypesIncluded,
   description,
@@ -216,7 +228,11 @@ const GithubRepoBoard = ({
 
                   <div class="d-flex flex-column gap-3">
                     {(state.ticketsByColumn[column.id] ?? []).map((data) =>
-                      widget("entity.github-repo.ticket", { data }, data.id)
+                      widget(
+                        "entity.team-board.github-ticket",
+                        { data },
+                        data.id
+                      )
                     )}
                   </div>
                 </div>
@@ -239,4 +255,4 @@ const GithubRepoBoard = ({
   );
 };
 
-return GithubRepoBoard(props);
+return GithubKanbanTeamBoard(props);
