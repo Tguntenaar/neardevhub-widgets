@@ -79,8 +79,6 @@ const parentId = props.parentId ?? null;
 const postId = props.postId ?? null;
 const mode = props.mode ?? "Create";
 
-const isSponsorship = postType === "Sponsorship";
-
 const referralLabels = props.referral ? [`referral:${props.referral}`] : [];
 const labelStrings = (props.labels ?? []).concat(referralLabels);
 const labels = labelStrings.map((s) => {
@@ -429,9 +427,7 @@ const isFundraisingDiv = (
   <>
     <div class="mb-2">
       <p class="fs-6 fw-bold mb-1">
-        {isSponsorship
-          ? "Are you funding their solution?"
-          : "Are you seeking funding for your solution?"}
+          Are you seeking funding for your solution?
         <span class="text-muted fw-normal">(Optional)</span>
       </p>
       <div class="form-check form-check-inline">
@@ -489,7 +485,7 @@ const fundraisingDiv = (
       </select>
     </div>
     <div className="col-lg-6 mb-2">
-      {isSponsorship ? "Sponsored" : "Requested"} amount
+      Requested amount
       <span class="text-muted fw-normal">(Numbers Only)</span>
       <input
         type="number"
@@ -506,7 +502,7 @@ const fundraisingDiv = (
     </div>
     <div className="col-lg-6 mb-2">
       <p class="mb-1">
-        {isSponsorship ? "Sponsor" : "Requested sponsor"}
+        Requested sponsor
         <span class="text-muted fw-normal">(Optional)</span>
       </p>
       <p style={{ fontSize: "13px" }} class="m-0 text-muted fw-light">
@@ -530,9 +526,7 @@ const fundraisingDiv = (
 );
 
 function generateDescription(text, amount, token, supervisor) {
-  const funding = isSponsorship
-    ? `###### Sponsored amount: ${amount} ${token}\n###### Sponsor: @${supervisor}\n`
-    : `###### Requested amount: ${amount} ${token}\n###### Requested sponsor: @${supervisor}\n`;
+  const funding = `###### Requested amount: ${amount} ${token}\n###### Requested sponsor: @${supervisor}\n`;
   if (amount > 0 && token && supervisor) return funding + text;
   return text;
 }
