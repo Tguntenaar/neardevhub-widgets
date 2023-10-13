@@ -13,7 +13,7 @@ const {
 // THESE ARE TEMPORARY
 // This can be solved with injection during build
 if (!nearDevGovGigsWidgetsAccountId) {
-  nearDevGovGigsWidgetsAccountId = "devhub.efiz.testnet";
+  nearDevGovGigsWidgetsAccountId = "thomaspreview.testnet";
 }
 if (!nearDevGovGigsContractAccountId) {
   nearDevGovGigsContractAccountId = "thomaspreview.testnet";
@@ -86,6 +86,19 @@ function Page() {
                   return (
                     <Widget
                       src={`${nearDevGovGigsWidgetsAccountId}/widget/DevHub.pages.community.configuration`}
+                      props={{
+                        nearDevGovGigsWidgetsAccountId,
+                        nearDevGovGigsContractAccountId,
+                        ...passProps,
+                        ...p,
+                      }}
+                    />
+                  );
+                }
+                case "board": {
+                  return (
+                    <Widget
+                      src={`${nearDevGovGigsWidgetsAccountId}/widget/DevHub.pages.community.board`}
                       props={{
                         nearDevGovGigsWidgetsAccountId,
                         nearDevGovGigsContractAccountId,

@@ -72,7 +72,7 @@ const tabs = [
 const onShareClick = () =>
   clipboard
     .writeText(
-      `https://near.org/${nearDevGovGigsWidgetsAccountId}/widget/DevHub.App?page=community?handle=${handle}`
+      `https://near.org/${nearDevGovGigsWidgetsAccountId}/widget/DevHub.App?page=community&handle=${handle}`
     ) // TODO: how should this be determined?
     .then(setLinkCopied(true));
 
@@ -113,7 +113,7 @@ return (
             props={{
               classNames: { root: "btn-outline-light text-dark" },
               // Need to calculate href
-              href: `http://localhost:3000/${nearDevGovGigsWidgetsAccountId}/widget/DevHub.App?page=community.configuration&handle=${handle}`,
+              href: `https://near.org/${nearDevGovGigsWidgetsAccountId}/widget/DevHub.App?page=community.configuration&handle=${handle}`,
               icon: {
                 type: "bootstrap_icon",
                 variant: "bi-gear-wide-connected",
