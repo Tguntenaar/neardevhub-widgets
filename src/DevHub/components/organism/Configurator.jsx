@@ -279,9 +279,15 @@ const defaultFieldsRender = ({ schema, form, isEditable }) => (
                     )?.toString?.() || "none"}
                   </span>
                 ) : (fieldValue?.length ?? 0) > 0 ? (
-                  widget("components.molecule.markdown-viewer", {
-                    text: fieldValue,
-                  })
+                  // widget("components.molecule.markdown-viewer", {
+                  //   text: fieldValue,
+                  // })
+                  <Widget
+                    src={`${nearDevGovGigsWidgetsAccountId}/widget/DevHub.components.molecule.MarkdownViewer`}
+                    props={{
+                      text: fieldValue,
+                    }}
+                  />
                 ) : (
                   <span>none</span>
                 )}

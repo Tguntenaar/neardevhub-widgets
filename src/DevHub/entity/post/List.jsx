@@ -106,7 +106,7 @@ function defaultRenderItem(postId, additionalProps) {
   // It is important to have a non-zero-height element as otherwise InfiniteScroll loads too many items on initial load
   return (
     <div className="py-2" style={{ minHeight: "150px" }}>
-      {widget(
+      {/* {widget(
         `entity.post.Post`,
         {
           id: postId,
@@ -118,7 +118,20 @@ function defaultRenderItem(postId, additionalProps) {
           ...additionalProps,
         },
         postId
-      )}
+      )} */}
+      <Widget
+        src={`${nearDevGovGigsWidgetsAccountId}/widget/DevHub.entity.post.Post`}
+        props={{
+          id: postId,
+          expandable: true,
+          defaultExpanded: false,
+          isInList: true,
+          draftState,
+          onDraftStateChange,
+          ...additionalProps,
+        }}
+        key={postId}
+      />
     </div>
   );
 }

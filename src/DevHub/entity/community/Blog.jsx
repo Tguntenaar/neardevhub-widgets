@@ -3,9 +3,15 @@
 //   author,
 //   tag,
 // });
+const { nearDevGovGigsWidgetsAccountId, tab } = props;
+// Blog specific parameters
+const {
+  params: { labels, excludeLabels },
+} = tab;
 
 const [author, setAuthor] = useState(props.author || "");
-const [tag, setTag] = useState(props.tag || "");
+// const [tag, setTag] = useState(props.tag || "");
+const [tag, setTag] = useState(labels[0] || "");
 
 // // When rerendered with different props, State will be preserved, so we need to update the state when we detect that the props have changed.
 // if (tag !== state.initial.tag || author !== state.initial.author) {
@@ -24,6 +30,9 @@ const onTagSearch = (tag) => {
 const onAuthorSearch = (author) => {
   setAuthor(author);
 };
+
+console.log(labels);
+console.log("tag", tag);
 
 return (
   <Widget

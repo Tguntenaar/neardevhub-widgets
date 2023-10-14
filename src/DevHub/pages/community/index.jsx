@@ -59,11 +59,11 @@ const tabs = [
   },
   ...(communityAddonConfigs || []).map((addon) => ({
     title: addon.name,
-    route: availableAddons.find((it) => it.id === addon.config_id).viewer,
-    viewer: availableAddons.find((it) => it.id === addon.config_id).viewer,
+    route: availableAddons.find((it) => it.id === addon.addon_id).viewer,
+    viewer: availableAddons.find((it) => it.id === addon.addon_id).viewer,
     iconClass: addon.icon,
     params: {
-      viewer: availableAddons.find((it) => it.id === addon.config_id).viewer,
+      viewer: availableAddons.find((it) => it.id === addon.addon_id).viewer,
       data: addon.parameters || "", // @elliotBraem not sure which will work better I guess this is needed for the wiki data but we can also add another data object inside the addon's parameters
       ...JSON.parse(addon.parameters), // this seems to work witht the wiki for now
     },
@@ -170,11 +170,17 @@ return (
     {/* TODO: remove */}
     <div>{tabs.find((tab) => tab.viewer == props.tab)[0]}</div>
     <div>{tabs.map((tab) => tab.viewer).join(",")}</div>
-    <Widget
-      src={currentTab.viewer}
-      props={{
-        tab: currentTab,
-      }}
-    />
+    {currentTab.viewer ? (
+      <Widget
+        src={currentTab.viewer}
+        props={{
+          tab: currentTab,
+          nearDevGovGigsWidgetsAccountId, // TODO no prop drilling
+        }}
+      />
+    ) : (
+      // TODO
+      <div>Add on viewer not configured</div>
+    )}
   </div>
 );
