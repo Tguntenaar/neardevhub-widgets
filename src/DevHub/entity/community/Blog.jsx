@@ -9,9 +9,7 @@ const {
   params: { labels, excludeLabels },
 } = tab;
 
-const [author, setAuthor] = useState(props.author || "");
 // const [tag, setTag] = useState(props.tag || "");
-const [tag, setTag] = useState(labels[0] || "");
 
 // // When rerendered with different props, State will be preserved, so we need to update the state when we detect that the props have changed.
 // if (tag !== state.initial.tag || author !== state.initial.author) {
@@ -22,6 +20,8 @@ const [tag, setTag] = useState(labels[0] || "");
 //     tag,
 //   }));
 // }
+const [author, setAuthor] = useState(props.author || "");
+const [tag, setTag] = useState(props.tag || "");
 
 const onTagSearch = (tag) => {
   setTag(tag);
@@ -31,18 +31,15 @@ const onAuthorSearch = (author) => {
   setAuthor(author);
 };
 
-console.log(labels);
-console.log("tag", tag);
-
 return (
   <Widget
-    src={`${nearDevGovGigsWidgetsAccountId}/widget/DevHub.entity.post.Panel`}
+    src={"${REPL_DEVHUB}/widget/DevHub.entity.post.Panel"}
     props={{
       author: author,
       authorQuery: { author },
       children: (
         <Widget
-          src={`${nearDevGovGigsWidgetsAccountId}/widget/DevHub.components.molecule.PostControls`}
+          src={"${REPL_DEVHUB}/widget/DevHub.components.molecule.PostControls"}
           props={{ title: "Post", link: "Create" }}
         />
       ),

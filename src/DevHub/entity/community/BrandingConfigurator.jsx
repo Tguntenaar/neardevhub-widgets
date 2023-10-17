@@ -76,21 +76,34 @@ const cidToURL = (cid) => `https://ipfs.near.social/ipfs/${cid}`;
 
 const { data, onSubmit, hasConfigurePermissions, link } = props;
 
-State.init({
+const initialInput = { banner: null, logo: null };
+
+const initialValues = {
   banner: { cid: data.banner_url.split("/").at(-1) },
   logo: { cid: data.logo_url.split("/").at(-1) },
-})
+};
 
-// const [banner, setBanner] = useState(data.banner_url.split("/").at(-1));
-// const [logo, setLogo] = useState(data.logo_url.split("/").at(-1));
+State.init({
+  input: initialInput,
+});
 
-useEffect(() => {
-  // console.log(state.banner);
+const hasUnsubmittedChanges = Object.values(state.input).some(
+  (value) => value !== null
+);
+
+const isSynced = state.input === initialValues;
+
+if (hasUnsubmittedChanges && !isSynced) {
   onSubmit({
-    banner_url: cidToURL(state.banner.cid),
-    logo_url: cidToURL(state.logo.cid),
+    banner_url: cidToURL(state.input.banner?.cid ?? initialValues.banner.cid),
+    logo_url: cidToURL(state.input.logo?.cid ?? initialValues.logo.cid),
   });
-}, [state.logo, state.banner]);
+
+  State.update((lastKnownState) => ({
+    ...lastKnownState,
+    input: initialInput,
+  }));
+}
 
 return (
   <div style={{ height: 280 }}>
@@ -98,10 +111,14 @@ return (
       alt="Community banner preview"
       className="card-img-top d-flex flex-column justify-content-end align-items-end p-4"
       style={{
-        background: `center / cover no-repeat url(${cidToURL(state.banner.cid)})`,
+        background: `center / cover no-repeat url(${cidToURL(
+          initialValues.banner.cid
+        )})`,
       }}
     >
-      {hasConfigurePermissions && <IpfsImageUpload image={state.banner.cid} />}
+      {hasConfigurePermissions && (
+        <IpfsImageUpload image={state.input.banner} />
+      )}
     </Banner>
     <Logo
       alt="Community logo preview"
@@ -114,10 +131,12 @@ return (
         width: 128,
         height: 128,
 
-        background: `center / cover no-repeat url(${cidToURL(state.logo.cid)})`,
+        background: `center / cover no-repeat url(${cidToURL(
+          initialValues.logo.cid
+        )})`,
       }}
     >
-      {hasConfigurePermissions && <IpfsImageUpload image={state.logo.cid} />}
+      {hasConfigurePermissions && <IpfsImageUpload image={state.input.logo} />}
     </Logo>
 
     <div

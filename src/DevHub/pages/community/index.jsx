@@ -35,15 +35,15 @@ const NavUnderline = styled.ul`
   }
 `;
 
-const {
-  nearDevGovGigsWidgetsAccountId,
-  handle,
-  tab,
-  permissions,
-  community,
-  communityAddonConfigs,
-  availableAddons,
-} = props;
+const { handle, tab, permissions, community } = props;
+
+const { href } = VM.require(
+  "${REPL_DEVHUB_CONTRACT}/widget/DevHub.modules.utils"
+);
+
+if (!href) {
+  return <></>;
+}
 
 if (!tab) {
   tab = "Activity";
@@ -53,32 +53,49 @@ const [isLinkCopied, setLinkCopied] = useState(false);
 
 const tabs = [
   {
-    iconClass: "bi bi-house-door",
-    viewer: "devgovgigs.near/widget/gigs-board.pages.community.activity",
     title: "Activity",
-  },
-  ...(communityAddonConfigs || []).map((addon) => ({
-    title: addon.name,
-    route: availableAddons.find((it) => it.id === addon.addon_id).viewer,
-    viewer: availableAddons.find((it) => it.id === addon.addon_id).viewer,
-    iconClass: addon.icon,
+    iconClass: "bi bi-house-door",
+    view: "${REPL_DEVHUB}/widget/DevHub.entity.community.Activity",
     params: {
-      viewer: availableAddons.find((it) => it.id === addon.addon_id).viewer,
-      data: addon.parameters || "", // @elliotBraem not sure which will work better I guess this is needed for the wiki data but we can also add another data object inside the addon's parameters
-      ...JSON.parse(addon.parameters), // this seems to work witht the wiki for now
+      handle,
     },
-  })),
+  },
+  {
+    title: "Teams",
+    iconClass: "bi bi-people-fill",
+    view: "${REPL_DEVHUB}/widget/DevHub.entity.community.Teams",
+    params: {
+      handle,
+    },
+  },
 ];
+
+(community.addons || []).map((addon) => {
+  tabs.push({
+    id: addon.id,
+    title: addon.display_name,
+    iconClass: addon.icon,
+    view: "${REPL_DEVHUB}/widget/DevHub.pages.addon.index",
+    params: {
+      addon_id: addon.addon_id,
+      config: community.configs[addon.id],
+    },
+  });
+});
 
 const onShareClick = () =>
   clipboard
     .writeText(
-      `https://near.org/${nearDevGovGigsWidgetsAccountId}/widget/DevHub.App?page=community?handle=${handle}`
-    ) // TODO: how should this be determined?
+      href({
+        gateway: "near.org",
+        widgetSrc: "${REPL_DEVHUB}/widget/DevHub.App",
+        params: { page: "community", handle },
+      })
+    )
     .then(setLinkCopied(true));
-// TODO;
-let currentTab = tabs.find((tab) => tab.title == props.tab);
-console.log(currentTab);
+
+let currentTab = tabs.find((it) => it.title === tab);
+
 return (
   <div className="d-flex flex-column gap-3 bg-white w-100">
     <Banner
@@ -106,31 +123,30 @@ return (
         <div className="d-flex flex-column ps-3 pt-3 pb-2">
           <span className="h1 text-nowrap">{community.name}</span>
           <span className="text-secondary">{community.description}</span>
-          <span className="text-secondary">{props.tab}</span>
         </div>
       </div>
 
       <div className="d-flex align-items-end gap-3 ms-auto">
-        {permissions.can_configure && (
-          <Widget
-            src={`${nearDevGovGigsWidgetsAccountId}/widget/DevHub.components.molecule.Button`}
-            props={{
-              classNames: { root: "btn-outline-light text-dark" },
-              // Need to calculate href
-              href: `http://localhost:3000/${nearDevGovGigsWidgetsAccountId}/widget/DevHub.App?page=community.configuration&handle=${handle}`,
-              icon: {
-                type: "bootstrap_icon",
-                variant: "bi-gear-wide-connected",
-              },
-              label: "Configure community",
-              type: "link",
-              nearDevGovGigsWidgetsAccountId,
-            }}
-          />
+        {true && ( // TODO: Add back permissions check permissions.can_configure
+          <Link
+            to={`/${REPL_DEVHUB}/widget/DevHub.App?page=community.configuration&handle=${handle}`}
+          >
+            <Widget
+              src={"${REPL_DEVHUB}/widget/DevHub.components.molecule.Button"}
+              props={{
+                classNames: { root: "btn-outline-light text-dark" },
+                icon: {
+                  type: "bootstrap_icon",
+                  variant: "bi-gear-wide-connected",
+                },
+                label: "Configure community",
+              }}
+            />
+          </Link>
         )}
 
         <Widget
-          src={`${nearDevGovGigsWidgetsAccountId}/widget/DevHub.components.molecule.Button`}
+          src={"${REPL_DEVHUB}/widget/DevHub.components.molecule.Button"}
           props={{
             classNames: { root: "btn-outline-light text-dark" },
 
@@ -143,44 +159,34 @@ return (
             onClick: onShareClick,
             onMouseLeave: () => setLinkCopied(false),
             title: "Copy link to clipboard",
-            nearDevGovGigsWidgetsAccountId,
           }}
         />
       </div>
     </div>
     <NavUnderline className="nav">
-      {tabs.map(({ defaultActive, params, route, title }) =>
-        title ? (
-          <li className="nav-item" key={title}>
-            <Link
-              to={`/${nearDevGovGigsWidgetsAccountId}/widget/DevHub.App?page=community&handle=${handle}&tab=${title}`}
-              aria-current={defaultActive && "page"}
-              className={[
-                "d-inline-flex gap-2",
-                tab === title ? "nav-link active" : "nav-link",
-              ].join(" ")}
-              // href={href(route, { handle, ...(params ?? {}) })}
-            >
-              <span>{title}</span>
-            </Link>
-          </li>
-        ) : null
+      {tabs.map(
+        ({ title }) =>
+          title && (
+            <li className="nav-item" key={title}>
+              <Link
+                to={href({
+                  widgetSrc: "${REPL_DEVHUB}/widget/DevHub.App",
+                  params: { page: "community", handle, tab: title },
+                })}
+                aria-current={tab === title && "page"}
+                className={[
+                  "d-inline-flex gap-2",
+                  tab === title ? "nav-link active" : "nav-link",
+                ].join(" ")}
+              >
+                <span>{title}</span>
+              </Link>
+            </li>
+          )
       )}
     </NavUnderline>
-    {/* TODO: remove */}
-    <div>{tabs.find((tab) => tab.viewer == props.tab)[0]}</div>
-    <div>{tabs.map((tab) => tab.viewer).join(",")}</div>
-    {currentTab.viewer ? (
-      <Widget
-        src={currentTab.viewer}
-        props={{
-          tab: currentTab,
-          nearDevGovGigsWidgetsAccountId, // TODO no prop drilling
-        }}
-      />
-    ) : (
-      // TODO
-      <div>Add on viewer not configured</div>
-    )}
+    <div className="d-flex w-100 h-100">
+      {currentTab && <Widget src={currentTab.view} props={currentTab.params} />}
+    </div>
   </div>
 );

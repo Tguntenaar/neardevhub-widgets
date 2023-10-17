@@ -1,7 +1,7 @@
 const MarkdownEditor = ({ data, onChange }) => {
   return (
     <Widget
-      src="devhub.efiz.near/widget/SimpleMDE"
+      src={"${REPL_EFIZ}"}
       props={{
         data,
         onChange,

@@ -1,31 +1,23 @@
-const {
-  nearDevGovGigsWidgetsAccountId,
-  nearDevGovGigsContractAccountId,
-  createCommunity,
-} = props;
-
-const { getAllCommunitiesMetadata } = VM.require(
-  `${nearDevGovGigsWidgetsAccountId}/widget/DevHub.modules.contract-sdk`
+const { getAllCommunitiesMetadata, createCommunity } = VM.require(
+  "${REPL_DEVHUB}/widget/DevHub.modules.contract-sdk"
 );
 
-if (!getAllCommunitiesMetadata) {
+if (!getAllCommunitiesMetadata || !createCommunity) {
   return <p>Loading modules...</p>;
 }
 
-const { Struct } = VM.require(
-  `${nearDevGovGigsWidgetsAccountId}/widget/DevHub.modules.Struct`
-);
+const { Struct } = VM.require("${REPL_DEVHUB}/widget/DevHub.modules.utils");
 
 if (!Struct) {
   return <p>Loading modules...</p>;
 }
 
-const CommunityInputsDefaults = {
+State.init({
   handle: "",
   name: "",
   tag: "",
   description: "",
-};
+});
 
 const CommunityInputsPartialSchema = {
   handle: {
@@ -93,7 +85,7 @@ const communityInputsValidator = (formValues) =>
   );
 
 const onCommunitySubmit = (inputs) =>
-  createCommunity(nearDevGovGigsContractAccountId, {
+  createCommunity({
     inputs: {
       ...inputs,
 
@@ -114,27 +106,35 @@ const [showSpawner, setShowSpawner] = useState(false);
 
 const CommunitySpawner = () => (
   <Widget
-    src={`${nearDevGovGigsWidgetsAccountId}/widget/gigs-board.components.organism.configurator`}
+    src={"${REPL_DEVHUB}/widget/DevHub.components.molecule.Tile"}
     props={{
-      heading: "Community information",
-      externalState: CommunityInputsDefaults,
-      fullWidth: true,
-      isActive: true,
-      isHidden,
-      isUnlocked: true,
-      isValid: communityInputsValidator,
-      onSubmit: onCommunitySubmit,
-      schema: CommunityInputsPartialSchema,
-      submitIcon: { type: "bootstrap_icon", variant: "bi-rocket-takeoff-fill" },
-      submitLabel: "Launch",
-      onCancel: () => setShowSpawner(false),
+      className: "p-3",
+      children: (
+        <Widget
+          src={"${REPL_DEVHUB}/widget/DevHub.components.organism.Configurator"}
+          props={{
+            heading: "Community information",
+            externalState: CommunityInputsDefaults,
+            fullWidth: true,
+            isActive: true,
+            isUnlocked: true,
+            isValid: communityInputsValidator,
+            onSubmit: onCommunitySubmit,
+            schema: CommunityInputsPartialSchema,
+            submitIcon: {
+              type: "bootstrap_icon",
+              variant: "bi-rocket-takeoff-fill",
+            },
+            submitLabel: "Launch",
+            onCancel: () => setShowSpawner(false),
+          }}
+        />
+      ),
     }}
   />
 );
 
-const communitiesMetadata = getAllCommunitiesMetadata(
-  nearDevGovGigsContractAccountId
-);
+const communitiesMetadata = getAllCommunitiesMetadata();
 
 if (!communitiesMetadata) {
   return <p>Loading...</p>;
@@ -146,7 +146,7 @@ function CommunityCard({ format, isBannerEnabled, metadata }) {
 
   const formatSmall = (
     <Link
-      to={`/${nearDevGovGigsWidgetsAccountId}/widget/DevHub.App?page=community&handle=${metadata.handle}`}
+      to={`${REPL_DEVHUB}/widget/DevHub.App?page=community&handle=${metadata.handle}`}
     >
       <div
         {...otherProps}
@@ -237,7 +237,7 @@ return (
       <div className="d-flex flex-column gap-3">
         <h1 className="m-0 fs-4">
           <Link
-            to={`/${nearDevGovGigsWidgetsAccountId}/widget/DevHub.App?page=communities`}
+            to={`${REPL_DEVHUB}/widget/DevHub.App?page=communities`}
             className="text-white"
           >
             Communities
@@ -248,19 +248,19 @@ return (
           Discover NEAR developer communities
         </p>
       </div>
-
-      <div className="d-flex flex-column justify-content-center">
-        <Widget
-          src={`${nearDevGovGigsWidgetsAccountId}/widget/DevHub.components.molecule.Button`}
-          props={{
-            icon: { type: "bootstrap_icon", variant: "bi-people-fill" },
-            onClick: () => setShowSpawner(!showSpawner),
-            className: "btn btn-primary",
-            label: "Create Community",
-            nearDevGovGigsWidgetsAccountId,
-          }}
-        />
-      </div>
+      {context.accountId && (
+        <div className="d-flex flex-column justify-content-center">
+          <Widget
+            src={"${REPL_DEVHUB}/widget/DevHub.components.molecule.Button"}
+            props={{
+              icon: { type: "bootstrap_icon", variant: "bi-people-fill" },
+              onClick: () => setShowSpawner(!showSpawner),
+              className: "btn btn-primary",
+              label: "Create Community",
+            }}
+          />
+        </div>
+      )}
     </div>
     {/* // TODO: Align centers */}
     <div className="d-flex flex-wrap align-content-start gap-4 p-4 w-100 h-100">

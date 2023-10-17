@@ -114,14 +114,7 @@ const rootElementByType = (type) =>
         ${styles}
       `;
 
-const Button = ({
-  classNames,
-  icon: iconProps,
-  label,
-  type,
-  nearDevGovGigsWidgetsAccountId,
-  ...restProps
-}) => {
+const Button = ({ classNames, icon: iconProps, label, type, ...restProps }) => {
   const ButtonRoot = rootElementByType(type);
 
   return (
@@ -137,7 +130,7 @@ const Button = ({
         typeof iconProps === "object" &&
         !Array.isArray(iconProps) && (
           <Widget
-            src={`${nearDevGovGigsWidgetsAccountId}/widget/DevHub.components.atom.Icon`}
+            src={"${REPL_DEVHUB}/widget/DevHub.components.atom.Icon"}
             props={iconProps}
           />
         )}

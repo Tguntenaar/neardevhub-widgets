@@ -23,7 +23,7 @@ return (
       onChange={(e) => setName(e.target.value)}
     />
     <Widget
-      src={`${nearDevGovGigsWidgetsAccountId}/widget/DevHub.components.atom.Toggle`}
+      src={"${REPL_DEVHUB}/widget/DevHub.components.atom.Toggle"}
       props={{
         label: "Enabled",
         value: enabled,
@@ -32,7 +32,10 @@ return (
     />
     <Widget
       src={addon.configurator}
-      props={{ data: JSON.parse(config.parameters), onSubmit: handleOnSubmit, nearDevGovGigsWidgetsAccountId }}
+      props={{
+        data: JSON.parse(config.parameters),
+        onSubmit: handleOnSubmit,
+      }}
     />
   </div>
 );
