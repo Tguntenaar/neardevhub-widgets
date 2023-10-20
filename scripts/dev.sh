@@ -9,7 +9,7 @@ fi
 
 # Define default values
 ACCOUNT_ID="devhub.testnet"
-CONTRACT_ID="devhub.testnet"
+CONTRACT_ID="devgovgigs.near"
 NETWORK_ENV="testnet"
 CREATOR_REPL="REPL_DEVHUB"
 CONTRACT_REPL="REPL_DEVHUB_CONTRACT"

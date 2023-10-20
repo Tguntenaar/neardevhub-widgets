@@ -19,6 +19,20 @@ function getCommunity({ handle }) {
   );
 }
 
+function setCommunityAddons(handle, addons) {
+  return Near.call("${REPL_DEVHUB_CONTRACT}", "set_community_addons", {
+    handle,
+    addons,
+  });
+}
+
+function setCommunityAddon(handle, community_addon) {
+  return Near.call("${REPL_DEVHUB_CONTRACT}", "set_community_addon", {
+    handle,
+    community_addon,
+  });
+}
+
 function getFeaturedCommunities() {
   return (
     Near.view("${REPL_DEVHUB_CONTRACT}", "get_featured_communities") ?? null
@@ -59,27 +73,6 @@ function updateCommunityGithub({ handle, github }) {
   });
 }
 
-function addCommunityAddon({ handle, config }) {
-  return Near.call("${REPL_DEVHUB_CONTRACT}", "add_community_addon", {
-    community_handle: handle,
-    addon_config: config,
-  });
-}
-
-function updateCommunityAddon({ handle, config }) {
-  return Near.call("${REPL_DEVHUB_CONTRACT}", "update_community_addon", {
-    community_handle: handle,
-    addon_config: config,
-  });
-}
-
-function removeCommunityAddon({ handle, config_id }) {
-  return Near.call("${REPL_DEVHUB_CONTRACT}", "remove_community_addon", {
-    community_handle: handle,
-    config_id,
-  });
-}
-
 function getAccessControlInfo() {
   return (
     Near.view("${REPL_DEVHUB_CONTRACT}", "get_access_control_info") ?? null
@@ -102,12 +95,6 @@ function getAvailableAddons() {
 
 function getCommunityAddons({ handle }) {
   return Near.view("${REPL_DEVHUB_CONTRACT}", "get_community_addons", {
-    handle,
-  });
-}
-
-function getCommunityAddonConfigs({ handle }) {
-  return Near.view("${REPL_DEVHUB_CONTRACT}", "get_community_addon_configs", {
     handle,
   });
 }
@@ -201,15 +188,13 @@ return {
   deleteCommunity,
   updateCommunityBoard,
   updateCommunityGithub,
-  addCommunityAddon,
-  updateCommunityAddon,
-  removeCommunityAddon,
   getAccessControlInfo,
   getAllAuthors,
   getAllCommunitiesMetadata,
   getAvailableAddons,
   getCommunityAddons,
-  getCommunityAddonConfigs,
+  setCommunityAddons,
+  setCommunityAddon,
   getAllLabels,
   getPost,
   getPostsByAuthor,
