@@ -37,10 +37,7 @@ const NavUnderline = styled.ul`
 
 const { tab, permissions, community } = props;
 
-
-const { href } = VM.require(
-  "${REPL_DEVHUB}/widget/DevHub.modules.utils"
-);
+const { href } = VM.require("${REPL_DEVHUB}/widget/DevHub.modules.utils");
 
 if (!href) {
   return <></>;
@@ -171,7 +168,11 @@ return (
               <Link
                 to={href({
                   widgetSrc: "${REPL_DEVHUB}/widget/DevHub.App",
-                  params: { page: "community", handle: community.handle, tab: title },
+                  params: {
+                    page: "community",
+                    handle: community.handle,
+                    tab: title,
+                  },
                 })}
                 aria-current={tab === title && "page"}
                 className={[
