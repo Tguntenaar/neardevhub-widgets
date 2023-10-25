@@ -6,6 +6,7 @@ const {
   updateCommunity,
   deleteCommunity,
   getCommunity,
+  getCommunityAddons,
 } = VM.require("${REPL_DEVHUB}/widget/DevHub.modules.contract-sdk");
 
 if (
@@ -36,7 +37,7 @@ const community = Near.view("${REPL_DEVHUB_CONTRACT}", "get_community", {
   handle: handle,
 });
 
-const permissions = getAccountCommunityPermissions("${REPL_DEVHUB_CONTRACT}", {
+const permissions = getAccountCommunityPermissions({
   account_id: context.accountId,
   community_handle: handle,
 }) || {
@@ -71,6 +72,8 @@ community.addons = [
     enabled: true,
   },
 ];
+
+community.addons = getCommunityAddons({ handle });
 
 community.configs = {
   [`${handle}-wiki-1`]: {
