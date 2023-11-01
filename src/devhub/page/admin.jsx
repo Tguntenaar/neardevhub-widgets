@@ -1,4 +1,7 @@
-const { useQuery, hasModerator } = VM.require(
+// TODO
+context.accountId = "theori.near";
+
+const { hasModerator, getFeaturedCommunities, getRootMembers } = VM.require(
   "${REPL_DEVHUB}/widget/core.adapter.devhub-contract"
 );
 
@@ -8,7 +11,7 @@ const { Tile } =
 
 const { href } = VM.require("${REPL_DEVHUB}/widget/core.lib.url");
 
-if (!useQuery || !hasModerator || !href) {
+if (!getFeaturedCommunities || !hasModerator || !getRootMembers || !href) {
   return <p>Loading modules...</p>;
 }
 
@@ -30,11 +33,15 @@ const CommunityFeaturingSchema = {
   },
 };
 
-const featuredCommunities = useQuery("featured_communities");
-const featuredCommunityList = featuredCommunities.data ?? [];
+const featuredCommunityList = getFeaturedCommunities();
+
 const isDevHubModerator = hasModerator({
   account_id: context.accountId,
 });
+
+const rootMembers = getRootMembers();
+
+const teamNames = Object.keys(rootMembers || {});
 
 const noPermissionBanner = (
   <div
@@ -65,15 +72,42 @@ const removeFeaturedCommunity = ({ handle: input }) =>
     handles: featuredCommunityHandles.filter((handle) => handle !== input),
   });
 
+const Container = styled.div`
+  width: 100%;
+  margin: 0 auto;
+  padding: 20px;
+  text-align: left;
+`;
+
+function createNewTeam({ teamName, label, editPost, useLabels, members }) {
+  // TODO make multiple calls if necessary
+  Near.call([
+    {
+      contractName: nearDevGovGigsContractAccountId,
+      methodName: "add_member",
+      args: {
+        member: `team:${teamName}`,
+        metadata: {
+          member_metadata_version: "V0",
+          description: "",
+          permissions: {
+            [label]: [editPost && "edit-post", useLabels && "use-labels"],
+          },
+          children: members,
+          parents: [],
+        },
+      },
+      deposit: Big(0).pow(21),
+      gas: Big(10).pow(12).mul(100),
+    },
+  ]);
+}
+
+const [createTeam, setCreateTeam] = useState(false);
+
 return (
   <div className="d-flex flex-column gap-4 p-4">
-    <Widget
-      src={"${REPL_DEVHUB}/widget/devhub.components.atom.Spinner"}
-      props={{
-        isHidden: !featuredCommunities.isLoading,
-      }}
-    />
-    {!featuredCommunities.isLoading && (
+    {featuredCommunityList ? (
       <>
         <div className="d-flex flex-wrap align-content-start gap-4">
           {featuredCommunityList.map((community) => (
@@ -108,7 +142,6 @@ return (
             />
           ))}
         </div>
-
         <Tile>
           <Widget
             // TODO: LEGACY.
@@ -129,6 +162,41 @@ return (
           />
         </Tile>
       </>
+    ) : (
+      <Widget
+        src={"${REPL_DEVHUB}/widget/devhub.components.atom.Spinner"}
+        props={{
+          isHidden: false,
+        }}
+      />
     )}
+    {!createTeam && (
+      <Widget
+        src={"${REPL_DEVHUB}/widget/devhub.components.molecule.PostControls"}
+        props={{
+          onClick: () => setCreateTeam(true),
+          title: "Create team",
+        }}
+      />
+    )}
+    {createTeam && (
+      <Widget
+        src={"${REPL_DEVHUB}/widget/devhub.entity.team.Configurator"}
+        props={{
+          onCancel: () => setCreateTeam(false),
+          onSubmit: () => createNewTeam(),
+        }}
+      />
+    )}
+    {(teamNames || []).map((teamName) => {
+      return (
+        <Widget
+          src={"${REPL_DEVHUB}/widget/devhub.entity.team.TeamInfo"}
+          props={{
+            teamName,
+          }}
+        />
+      );
+    })}
   </div>
 );
