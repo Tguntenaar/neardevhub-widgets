@@ -5,6 +5,8 @@
   "description": "NEAR DevHub widgets for NEAR Social",
   "devDependencies": {
     "@playwright/test": "^1.38.1",
+    "@types/fb-watchman": "^2.0.4",
+    "@types/node": "^20.9.2",
     "@types/react": "^18.2.33",
     "@types/react-dom": "^18.2.14",
     "@types/styled-components": "^5.1.30",
@@ -15,23 +17,20 @@
     "prettier": "^2.8.4",
     "replace-in-files": "^3.0.0",
     "simple-git-hooks": "^2.9.0",
-    "sucrase": "^3.34.0"
+    "sucrase": "^3.34.0",
+    "ts-node": "^10.9.1",
+    "typescript": "^5.2.2"
   },
   "scripts": {
     "fmt": "prettier --write '**/*.{js,jsx,ts,tsx,json}'",
     "fmt:check": "prettier --check '**/*.{js,jsx,ts,tsx,json}'",
-    "build": "npm run fmt && npm run copy:jsx && npm run transpile && npm run replace && node ./scripts/build.js",
+    "build": "npm run fmt && npm run copy:jsx && npm run transpile && ts-node ./scripts/build.ts",
     "copy:jsx": "mkdir -p build/src && cp -r ./src ./build",
     "transpile": "sucrase ./src -d ./build/src --transforms typescript,jsx --jsx-runtime preserve --disable-es-transforms --out-extension jsx",
-    "dev": "npm run watch & npm run dev:mainnet",
-    "dev:mainnet": "./scripts/dev.sh -a devhub.near",
-    "dev:testnet": "./scripts/dev.sh -a devhub.testnet",
-    "replace": "node ./scripts/replace.js -a devhub.near -c devgovgigs.near -n mainnet",
+    "dev": "ts-node scripts/dev.ts",
     "gateway": "node scripts/dev-gateway.mjs",
     "test": "npx playwright test",
-    "watch:native": "watchman watch ./src && watchman -- trigger ./src build '**/*' -- npm run build",
-    "watch": "node scripts/watch.js",
-    "clear:watch": "watchman watch-del-all; watchman shutdown-server"
+    "clean:watch": "watchman watch-del-all; watchman shutdown-server"
   },
   "simple-git-hooks": {
     "pre-commit": "npm run fmt"

@@ -1,13 +1,18 @@
-import fs from "fs";
+import { rename, readFileSync } from "fs";
 import replaceInFiles from "replace-in-files";
+import { replace } from "./replaceFunc";
+import { ReplacementValues } from "./types";
 
 const transpiledPathPrefix = "./build/src";
 
-async function build() {
+export async function build(replacementValues: ReplacementValues) {
+  // Replace Account Contract Network constants
+  replace(replacementValues);
+
   await replaceInFiles({
     files: [`${transpiledPathPrefix}/**/*.jsx`],
     from: /export\s+default\s+function\s+(\w+)\((.*)/gms,
-    to: (_match, funcName, rest) =>
+    to: (_match: string, funcName: string, rest: string) =>
       `function ${funcName}(${rest}\nreturn ${funcName}(props, context);`,
   });
 
@@ -23,17 +28,17 @@ async function build() {
   // replacements saved while the other file needs to include it, which ends up
   // with empty content includes.
   await new Promise((resolve) => {
-    fs.rename(
+    rename(
       `${transpiledPathPrefix}/includes`,
       `${transpiledPathPrefix}/../../includes`,
       () => {
-        resolve();
+        resolve("");
       }
     );
   });
 
   const packageJson = JSON.parse(
-    fs.readFileSync(new URL("../package.json", import.meta.url))
+    readFileSync(new URL("../package.json", import.meta.url)).toString()
   );
 
   // await replaceInFiles({
@@ -43,16 +48,14 @@ async function build() {
   // });
 
   await new Promise((resolve) => {
-    fs.rename(
+    rename(
       transpiledPathPrefix,
       `${transpiledPathPrefix}/../../${packageJson.name}`,
       () => {
-        resolve();
+        resolve("");
       }
     );
   });
 
   console.log("DONE");
 }
-
-build();
