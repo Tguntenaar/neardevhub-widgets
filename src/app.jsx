@@ -174,6 +174,24 @@ function Page() {
         />
       );
     }
+    // TODO naming
+    case "proposal": {
+      return (
+        <Widget
+          src={"${REPL_DEVHUB}/widget/devhub.page.proposal"}
+          props={passProps}
+        />
+      );
+    }
+    // TODO naming
+    case "overview": {
+      return (
+        <Widget
+          src={"${REPL_DEVHUB}/widget/devhub.page.overview"}
+          props={passProps}
+        />
+      );
+    }
     default: {
       // TODO: 404 page
       return <p>404</p>;
