@@ -18,6 +18,7 @@ const Theme = styled.div`
   flex-direction: column;
   padding-top: calc(-1 * var(--body-top-padding));
   background: #f4f4f4;
+  padding-bottom: 2rem;
   .container-xl {
     padding-inline: 0px !important;
   }
@@ -45,17 +46,6 @@ const AppHeader = ({ page }) => (
   />
 );
 
-const Footer = (props) => {
-  return (
-    <Widget
-      src="${REPL_DEVHUB}/widget/devhub.components.organism.NewsLetter"
-      props={{
-        ...props,
-      }}
-    />
-  );
-};
-
 function AppLayout({ page, children }) {
   return (
     <ParentContainer>
@@ -65,7 +55,6 @@ function AppLayout({ page, children }) {
           <ContentContainer className="container-xl">
             {children}
           </ContentContainer>
-          {/* <Footer page={page} /> */}
         </Container>
       </Theme>
     </ParentContainer>
