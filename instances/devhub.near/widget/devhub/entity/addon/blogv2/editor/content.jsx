@@ -660,13 +660,9 @@ return (
           <Card
             data={{
               title,
-              subtitle,
               description,
               publishedAt: date,
-              content,
-              author,
               category,
-              community: handle,
             }}
             addonParameters={addonParameters}
           />
@@ -679,7 +675,7 @@ return (
                 subtitle,
                 description,
                 publishedAt: date,
-                content,
+                content: JSON.parse(content),
                 author,
                 category,
                 community: handle,
